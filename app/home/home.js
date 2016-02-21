@@ -8,8 +8,28 @@
       $("#btnSignin").click(function() {
           AzureADAuth.getAccessToken()
             .then(function (token) {
+                access_token = token;
                 //handle token
-                $("#token").html(token);
+                $.ajax({
+                    url: "https://graph.microsoft.com/beta/me/joinedgroups",
+                    headers: {
+                        "Accept": "application/json",
+                        "Authorization": "Bearer " + access_token 
+                    },
+                    method: "GET",
+                    success: function (data) {
+                        $("#view-login").hide();
+                        $("#view-groups").show();
+
+                        var html = "<ul>";
+                        $(data.value).each(function(i, e) {
+                           html += "<li><a href='javascript:loadGroup(\"" + e.id + "\")'>" + e.displayName + "</a></li>";
+                        });
+                        html += "</ul>";
+                        $("#view-groups").html(html);
+                    }
+                });
+                
             })
             .error(function (err) {
                 //handle error
@@ -18,4 +38,30 @@
          });
       });
     };
+    
+    
 })();
+
+var access_token = null;
+function loadGroup(id) {
+    $("#view-groups").hide();
+    $("#view-spinner").show();
+    
+    $.ajax({
+        url: "https://graph.microsoft.com/v1.0/groups/" + id + "/members",
+        headers: {
+            "Accept": "application/json",
+            "Authorization": "Bearer " + access_token 
+        },
+        method: "GET",
+        success: function (data) {
+            //Load data with members
+            var html = "<ul>"
+            $(data.value).each(function(i, e) {
+                html += "<li>" + e.displayName + "</li>";
+            });
+            html += "</ul>"
+            $("#view-spinner").html(html);
+        }
+    });
+}
