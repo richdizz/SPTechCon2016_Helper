@@ -5,7 +5,7 @@
   Office.initialize = function(reason) {
     $(document).ready(function(){
       app.initialize();
-      $("#get-data-from-selection").click(function() {
+      $("#btnSignin").click(function() {
           AzureADAuth.getAccessToken()
             .then(function (token) {
                 //handle token
